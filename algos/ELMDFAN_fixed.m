@@ -57,63 +57,49 @@ for iViw = 1:nViw
     H{iViw} = 1./(1+exp(-H{iViw}));
 end
 
+L = Affinity2Laplacian(A_star);
+d = 100;
+
+% Update embedding
+for iViw = 1:nViw
+    X = H{iViw}';
+    if nNrn < nSmp
+        X_center = X-repmat(mean(X,2),1,size(X,2));
+        AA=alpha*eye(nNrn)+X*L*X';
+        BB=X_center*X_center'+1e-10*eye(size(X,1));
+        [E,~] = eigs(AA,BB,d,'sm');
+        norm_term=X_center'*E;
+        W{iViw} = bsxfun(@times,E,sqrt(1./sum(norm_term.*norm_term)));
+    else
+        X_center = X-repmat(mean(X,2),1,size(X,2));
+        AA=alpha*eye(nSmp)+L*(X'*X);
+        BB=pinv(X'*X)*X'*(X_center*X_center')*X+1e-10*eye(size(X,2));
+        [E,~] = eigs(AA,BB,d,'sm');
+        norm_term=X_center'*X*E;
+        W{iViw} = bsxfun(@times,X*E,sqrt(1./sum(norm_term.*norm_term)));
+    end
+end
+% d = eigs(A,B,___) solves the generalized eigenvalue problem A*V = B*V*D.
+
+% Update W
+for iViw=1:nViw
+    temp{iViw} = H{iViw}*W{iViw};
+end
+norm_embed_star = distancefusion(temp, fusion1, fusion2); % fused distance matrix
 
 
 %% alternating optimization F and A
 for iItr = 1:nItr
     
-    
-    
-    
-    
-%     A_old = A_star;
-%     D = diag(sum(A));
-%     L = D-A;
-    
-    
 %     fprintf('Iteration: %d/%d', iItr, nItr);
     A_star_old = A_star;
-    
-
     
     % update F with fixed A_star
     L_star = Affinity2Laplacian(A_star);
     [F, ~, ~] = eig1(L_star, nCls, 0);
     distf = L2_distance_1(F',F');
     
-    
-    
-    L = L_star;
-    d = 100;
-    alpha = 100; % TODO: as a input
-    
-    % Update embedding
-    for iViw = 1:nViw
-        X = H{iViw}';
-        if nNrn < nSmp
-            X_center = X-repmat(mean(X,2),1,size(X,2));
-            AA=alpha*eye(nNrn)+X*L*X';
-            BB=X_center*X_center'+1e-10*eye(size(X,1));
-            [E,~] = eigs(AA,BB,d,'sm');
-            norm_term=X_center'*E;
-            W{iViw} = bsxfun(@times,E,sqrt(1./sum(norm_term.*norm_term)));
-        else
-            X_center = X-repmat(mean(X,2),1,size(X,2));
-            AA=alpha*eye(nSmp)+L*(X'*X);
-            BB=pinv(X'*X)*X'*(X_center*X_center')*X+1e-10*eye(size(X,2));
-            [E,~] = eigs(AA,BB,d,'sm');
-            norm_term=X_center'*X*E;
-            W{iViw} = bsxfun(@times,X*E,sqrt(1./sum(norm_term.*norm_term)));
-        end
-    end
-% d = eigs(A,B,___) solves the generalized eigenvalue problem A*V = B*V*D.
 
-    % Update W
-    for iViw=1:nViw
-        temp{iViw} = H{iViw}*W{iViw};
-    end
-    norm_embed_star = distancefusion(temp, fusion1, fusion2); % fused distance matrix
-    
     norm_DE_star = norm_dists_star.*norm_embed_star;
     
     % update A_star with fixed F
