@@ -279,11 +279,12 @@ nCls = length(unique(Y));
 nNbr = getfield_with_default(params, 'nNbr', 10);
 fusion1 = getfield_with_default(params, 'fusion1', 'gm');
 fusion2 = getfield_with_default(params, 'fusion2', 'am');
+fusion3 = getfield_with_default(params, 'fusion3', 'am');
 alpha = getfield_with_default(params, 'alpha', 0);
 alpha = 10^(alpha);
 nOut = getfield_with_default(params, 'nOut', 100);
 
-labels = ELMDFAN_fixed(X, nCls, nNbr, fusion1, fusion2, alpha, nOut);
+labels = ELMDFAN_fixed(X, nCls, nNbr, fusion1, fusion2, fusion3, alpha, nOut);
 end
 
 function labels = runELMDFAN_tuned(X, Y, params)

@@ -1,9 +1,10 @@
-function labels = ELMDFAN_fixed(X, nCls, nNbr, fusion1, fusion2, alpha, nOut)
+function labels = ELMDFAN_fixed(X, nCls, nNbr, fusion1, fusion2, fusion3, alpha, nOut)
 % INPUT
 % X: num*dim data matrix, each row is a data point
 % nCls: number of clusters
 % nNbr: number of neighbors to determine the initial graph, 
 %       and the parameter r if r<=0
+% nOut: number of output of ELM
 % r: paremeter, which could be set bo a large enough value.
 %       If r<0, then it is determined by algorithm with k
 % islocal:
@@ -43,22 +44,22 @@ else
 %     A_star = squeeze(mean(A_all, 1)); % not reached
 %     r = 1e10; % r: paremeter, which could be set bo a large enough value.
 end
-lambda = r;
+lambda = r; % init lambda
 
 
 
 %% Init ELM
 nNrn = 1000; % TODO: nNrn as input argument
 for iViw = 1:nViw
+    
     W{iViw} = rand(size(X{iViw},2), nNrn)*2-1; % W is random input weights
-    H{iViw} = X{iViw} * W{iViw};
+    H{iViw} = X{iViw}*W{iViw};
 %     b{iViw} = rand(1,nNrn);
 %     H{iViw} = H{iViw} + b{iViw};
     H{iViw} = 1./(1+exp(-H{iViw}));
 end
 
 L = Affinity2Laplacian(A_star);
-d = 100;
 
 % Update embedding
 for iViw = 1:nViw
@@ -67,14 +68,26 @@ for iViw = 1:nViw
         X_center = X-repmat(mean(X,2),1,size(X,2));
         AA=alpha*eye(nNrn)+X*L*X';
         BB=X_center*X_center'+1e-10*eye(size(X,1));
-        [E,~] = eigs(AA,BB,d,'sm');
+        try
+            [E,~] = eigs(AA,BB,nOut,'sm');
+        catch
+            warning('Cant eigs.');
+            E = rand(nNrn,nOut);
+%             cant_eigs = 1;
+        end
         norm_term=X_center'*E;
         W{iViw} = bsxfun(@times,E,sqrt(1./sum(norm_term.*norm_term)));
     else
         X_center = X-repmat(mean(X,2),1,size(X,2));
         AA=alpha*eye(nSmp)+L*(X'*X);
         BB=pinv(X'*X)*X'*(X_center*X_center')*X+1e-10*eye(size(X,2));
-        [E,~] = eigs(AA,BB,d,'sm');
+        try
+            [E,~] = eigs(AA,BB,nOut,'sm');
+        catch
+            warning('Cant eigs.');
+            E = rand(nNrn,nOut);
+%             cant_eigs = 1;
+        end
         norm_term=X_center'*X*E;
         W{iViw} = bsxfun(@times,X*E,sqrt(1./sum(norm_term.*norm_term)));
     end
@@ -99,8 +112,20 @@ for iItr = 1:nItr
     [F, ~, ~] = eig1(L_star, nCls, 0);
     distf = L2_distance_1(F',F');
     
+    switch lower(fusion3)
+        case {'pd','product'}
+            norm_DE_star = norm_dists_star.*norm_embed_star;
+        case {'gm','geometric mean'}
+            norm_DE_star = sqrt(norm_dists_star.*norm_embed_star);
+        case {'sm','sum'}
+            norm_DE_star = norm_dists_star+norm_embed_star;
+        case {'am','arithmetic mean'}
+            norm_DE_star = (norm_dists_star+norm_embed_star)/2;
+        otherwise % arithmetic mean
+            norm_DE_star = (norm_dists_star+norm_embed_star)/2;
+    end
+%     norm_DE_star = norm_dists_star.*norm_embed_star;
 
-    norm_DE_star = norm_dists_star.*norm_embed_star;
     
     % update A_star with fixed F
     % r(lambda) is determined by dist_star for unified A
@@ -137,11 +162,9 @@ for iItr = 1:nItr
 end
 
 %% final results
-error = 0;
 [clusternum, y] = graphconncomp(sparse(A_star));
 labels = y';
 if clusternum ~= nCls
     sprintf('Can not find the correct cluster number: %d', nCls)
-    error = 1;
     labels = [];
 end
