@@ -73,7 +73,7 @@ for iViw = 1:nViw
         catch
             warning('Cant eigs.');
             E = rand(nNrn,nOut);
-%             cant_eigs = 1;
+            cant_eigs = 1;
         end
         norm_term=X_center'*E;
         W{iViw} = bsxfun(@times,E,sqrt(1./sum(norm_term.*norm_term)));
@@ -86,7 +86,7 @@ for iViw = 1:nViw
         catch
             warning('Cant eigs.');
             E = rand(nNrn,nOut);
-%             cant_eigs = 1;
+            cant_eigs = 1;
         end
         norm_term=X_center'*X*E;
         W{iViw} = bsxfun(@times,X*E,sqrt(1./sum(norm_term.*norm_term)));
@@ -94,77 +94,81 @@ for iViw = 1:nViw
 end
 % d = eigs(A,B,___) solves the generalized eigenvalue problem A*V = B*V*D.
 
-% Update W
-for iViw=1:nViw
-    temp{iViw} = H{iViw}*W{iViw};
-end
-norm_embed_star = distancefusion(temp, fusion1, fusion2); % fused distance matrix
 
-
-%% alternating optimization F and A
-for iItr = 1:nItr
-    
-%     fprintf('Iteration: %d/%d', iItr, nItr);
-    A_star_old = A_star;
-    
-    % update F with fixed A_star
-    L_star = Affinity2Laplacian(A_star);
-    [F, ~, ~] = eig1(L_star, nCls, 0);
-    distf = L2_distance_1(F',F');
-    
-    switch lower(fusion3)
-        case {'pd','product'}
-            norm_DE_star = norm_dists_star.*norm_embed_star;
-        case {'gm','geometric mean'}
-            norm_DE_star = sqrt(norm_dists_star.*norm_embed_star);
-        case {'sm','sum'}
-            norm_DE_star = norm_dists_star+norm_embed_star;
-        case {'am','arithmetic mean'}
-            norm_DE_star = (norm_dists_star+norm_embed_star)/2;
-        otherwise % arithmetic mean
-            norm_DE_star = (norm_dists_star+norm_embed_star)/2;
+if cant_eigs ~= 1
+    % Update W
+    for iViw=1:nViw
+        temp{iViw} = H{iViw}*W{iViw};
     end
-%     norm_DE_star = norm_dists_star.*norm_embed_star;
+    norm_embed_star = distancefusion(temp, fusion1, fusion2); % fused distance matrix
 
-    
-    % update A_star with fixed F
-    % r(lambda) is determined by dist_star for unified A
-    A_star = zeros(nSmp);
-    for i = 1:nSmp
-        if islocal
-            idxa0 = idx(i, 2:nNbr+1);
-        else
-            idxa0 = 1:nSmp;
+    %% alternating optimization F and A
+    for iItr = 1:nItr
+
+    %     fprintf('Iteration: %d/%d', iItr, nItr);
+        A_star_old = A_star;
+
+        % update F with fixed A_star
+        L_star = Affinity2Laplacian(A_star);
+        [F, ~, ~] = eig1(L_star, nCls, 0);
+        distf = L2_distance_1(F',F');
+
+        switch lower(fusion3)
+            case {'pd','product'}
+                norm_DE_star = norm_dists_star.*norm_embed_star;
+            case {'gm','geometric mean'}
+                norm_DE_star = sqrt(norm_dists_star.*norm_embed_star);
+            case {'sm','sum'}
+                norm_DE_star = norm_dists_star+norm_embed_star;
+            case {'am','arithmetic mean'}
+                norm_DE_star = (norm_dists_star+norm_embed_star)/2;
+            otherwise % arithmetic mean
+                norm_DE_star = (norm_dists_star+norm_embed_star)/2;
         end
-        
-        dfi = distf(i,idxa0);
-        dxi = norm_DE_star(i,idxa0);
-        ad = -(dxi + lambda*dfi)/(2*r);  % min(s) ||s + d/2r||^2_2
-        A_star(i,idxa0) = EProjSimplex_new(ad);
-    end
-    A_star = (A_star + A_star')/2;
-    L_star = Affinity2Laplacian(A_star);
-    
+%         norm_DE_star = norm_dists_star.*norm_embed_star;
 
-    % Check rank to decide whether to continue, repeat or stop
-    [~, ~, ev] = eig1(L_star, nCls, 0);
-    evs(:, iItr+1) = ev;
-    fn1 = sum(ev(1:nCls));
-    fn2 = sum(ev(1:nCls+1));
-    if fn1 > 1e-11
-        lambda = 2*lambda;
-    elseif fn2 < 1e-11
-        lambda = lambda/2;
-        A_star = A_star_old;
-    else
-        break
-    end
-end
 
-%% final results
-[clusternum, y] = graphconncomp(sparse(A_star));
-labels = y';
-if clusternum ~= nCls
-    sprintf('Can not find the correct cluster number: %d', nCls)
+        % update A_star with fixed F
+        % r(lambda) is determined by dist_star for unified A
+        A_star = zeros(nSmp);
+        for i = 1:nSmp
+            if islocal
+                idxa0 = idx(i, 2:nNbr+1);
+            else
+                idxa0 = 1:nSmp;
+            end
+
+            dfi = distf(i,idxa0);
+            dxi = norm_DE_star(i,idxa0);
+            ad = -(dxi + lambda*dfi)/(2*r);  % min(s) ||s + d/2r||^2_2
+            A_star(i,idxa0) = EProjSimplex_new(ad);
+        end
+        A_star = (A_star + A_star')/2;
+        L_star = Affinity2Laplacian(A_star);
+
+
+        % Check rank to decide whether to continue, repeat or stop
+        [~, ~, ev] = eig1(L_star, nCls, 0);
+        evs(:, iItr+1) = ev;
+        fn1 = sum(ev(1:nCls));
+        fn2 = sum(ev(1:nCls+1));
+        if fn1 > 1e-11
+            lambda = 2*lambda;
+        elseif fn2 < 1e-11
+            lambda = lambda/2;
+            A_star = A_star_old;
+        else
+            break
+        end
+    end
+
+    %% final results
+    [clusternum, y] = graphconncomp(sparse(A_star));
+    labels = y';
+    if clusternum ~= nCls
+        sprintf('Can not find the correct cluster number: %d', nCls)
+        labels = [];
+    end
+else
     labels = [];
 end
