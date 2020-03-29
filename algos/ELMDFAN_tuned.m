@@ -62,12 +62,6 @@ end
 
 
 
-
-
-
-
-
-
 %% repeat
 for iItr = 1:nItr
     
@@ -79,8 +73,8 @@ for iItr = 1:nItr
         X = H{iViw}';
         if nNrn < nSmp
             X_center = X-repmat(mean(X,2),1,size(X,2));
-            AA=alpha*eye(nNrn)+X*L*X';
-            BB=X_center*X_center'+1e-10*eye(size(X,1));
+            AA = alpha*eye(nNrn)+X*L*X'; % alpha is sigma in ELMCLR paper
+            BB = X_center*X_center'+1e-10*eye(size(X,1));
             try
                 [E,~] = eigs(AA,BB,nOut,'sm');
             catch
