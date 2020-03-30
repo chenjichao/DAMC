@@ -59,6 +59,8 @@ for iViw = 1:nViw
 %     b{iViw} = rand(1,nNrn);
 %     H{iViw} = H{iViw} + b{iViw};
     H{iViw} = 1./(1+exp(-H{iViw}));
+end
+for iViw = 1:nViw
     X = H{iViw}';
     if nNrn < nSmp
         X_center = X-repmat(mean(X,2),1,size(X,2));
