@@ -297,3 +297,10 @@ nOut = getfield_with_default(params, 'nOut', nCls);
 
 labels = ELMDFAN_tuned(X, nCls, nNbr, fusion3, alpha, nOut);
 end
+
+function labels = runDMLAN(X, Y, params)
+nCls = length(unique(Y));
+nNbr = getfield_with_default(params, 'nNbr', 10);
+
+labels = MLAN(X, nCls, nNbr);
+end
