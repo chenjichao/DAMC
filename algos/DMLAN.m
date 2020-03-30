@@ -1,4 +1,4 @@
-function labels = DMLAN(X, nCls, nNbr, alpha, nOut)
+function labels = DMLAN(X, nCls, nNbr, alpha, nOut, fusion3)
 % X:                cell array, 1 by view_num, each array is num by d_v
 % c:                number of clusters
 % v:                number of views
@@ -109,7 +109,18 @@ for iter = 1:nItr
     % update weighted_distDE
     SUM = zeros(nSmp,nSmp);
     for i = 1 : nViw
-        distDE = distX_updated(:,:,i).*distE(:,:,i);
+        switch fusion3
+            case 'pd'
+                distDE = distX_updated(:,:,i).*distE(:,:,i);
+            case 'gm'
+                distDE = sqrt(distX_updated(:,:,i).*distE(:,:,i));
+            case 'sm'
+                distDE = distX_updated(:,:,i)+distE(:,:,i);
+            case 'am'
+                distDE = (distX_updated(:,:,i)+distE(:,:,i))/2;
+            otherwise
+                distDE = distX_updated(:,:,i).*distE(:,:,i);
+        end
         Wv(i) = 0.5/sqrt(sum(sum( distDE.*S)));    % update weight_view
         distDE = Wv(i)*distDE;
         SUM = SUM + squeeze(distDE);
@@ -150,10 +161,12 @@ for iter = 1:nItr
 %     fprintf('\niter = %d', iter);
 end
 
+iter
+
 %% =====================  result =====================
 [clusternum, y]=graphconncomp(sparse(S)); y = y';
 if clusternum ~= nCls
-    sprintf('Can not find the correct cluster number: %d', cluster_num);
+    sprintf('Can not find the correct cluster number: %d', clusternum);
     labels = [];
 end
 % result = ClusteringMeasure(groundtruth, y);

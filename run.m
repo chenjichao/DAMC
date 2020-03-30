@@ -69,7 +69,7 @@ if permdata
     perm = randperm(nSmp);
     Y = Y(perm, :);
     for iViw = 1:nViw
-        X{iViw} = normalize(X{iViw});
+%         X{iViw} = normalize(X{iViw});
         X{iViw} = X{iViw}(perm, :); % size(X{iViw}) = [nSmp, nFtr];
     end
 end
@@ -304,6 +304,7 @@ nNbr = getfield_with_default(params, 'nNbr', 10);
 alpha = getfield_with_default(params, 'alpha', 0);
 alpha = 10^(alpha);
 nOut = getfield_with_default(params, 'nOut', nCls);
+fusion3 = getfield_with_default(params, 'fusion3', 'pd');
 
-labels = MLAN(X, nCls, nNbr, alpha, nOut);
+labels = DMLAN(X, nCls, nNbr, alpha, nOut, fusion3);
 end

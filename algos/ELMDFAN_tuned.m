@@ -66,8 +66,9 @@ end
 for iItr = 1:nItr
     
     A_star_old = A_star;
-    L = Affinity2Laplacian(A_star);
+    L_star = Affinity2Laplacian(A_star);
     
+    L = L_star;
     %% Update embedding
     for iViw = 1:nViw
         X = H{iViw}';
@@ -110,7 +111,7 @@ for iItr = 1:nItr
     dist_e = distancefusion_within(temp);
     
     %% update F with fixed A_star
-    L_star = Affinity2Laplacian(A_star);
+%     L_star = Affinity2Laplacian(A_star);
     [F, ~, ~] = eig1(L_star, nCls, 0);
     dist_f = L2_distance_1(F',F');
     
@@ -118,11 +119,20 @@ for iItr = 1:nItr
     %% update weights of view Wv  , thus global dist_DE
     dist_de = zeros(nViw,nSmp,nSmp);
     for iViw = 1:nViw
-        dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
+        switch fusion3
+            case 'pd'
+                dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
+            case 'gm'
+                dist_de(iViw,:,:) = sqrt(dist_d(iViw,:,:).*dist_e(iViw,:,:));
+            case 'sm'
+                dist_de(iViw,:,:) = dist_d(iViw,:,:)+dist_e(iViw,:,:);
+            case 'am'
+                dist_de(iViw,:,:) = (dist_d(iViw,:,:)+dist_e(iViw,:,:))/2;
+            otherwise
+                dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
+        end
+%         dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
         Wv(iViw) = 0.5/sqrt(sum(sum( squeeze(dist_de(iViw,:,:)).*A_star)));
-%         temp_de = Wv(iViw)*temp_de;
-%         dist_DE = dist_DE + temp_de;
-%         Wv * reshape(dist_DE,nViw,[])
     end
     dist_DE = reshape(Wv*reshape(dist_de,nViw,[]),nSmp,nSmp);
     
