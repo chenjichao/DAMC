@@ -306,7 +306,7 @@ alpha = getfield_with_default(params, 'alpha', 0);
 alpha = 10^(alpha);
 nOut = getfield_with_default(params, 'nOut', nCls);
 
-labels = ELMDFAN_wDfE(X, nCls, nNbr, fusion3, alpha, nOut);
+labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut);
 end
 
 function labels = runDMLAN(X, Y, params)
