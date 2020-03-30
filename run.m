@@ -301,6 +301,9 @@ end
 function labels = runDMLAN(X, Y, params)
 nCls = length(unique(Y));
 nNbr = getfield_with_default(params, 'nNbr', 10);
+alpha = getfield_with_default(params, 'alpha', 0);
+alpha = 10^(alpha);
+nOut = getfield_with_default(params, 'nOut', nCls);
 
-labels = MLAN(X, nCls, nNbr);
+labels = MLAN(X, nCls, nNbr, alpha, nOut);
 end

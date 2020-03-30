@@ -1,4 +1,4 @@
-function labels = DMLAN(X, nCls, nNbr)
+function labels = DMLAN(X, nCls, nNbr, alpha, nOut)
 % X:                cell array, 1 by view_num, each array is num by d_v
 % c:                number of clusters
 % v:                number of views
@@ -45,7 +45,7 @@ for i = 1:nSmp
     id = idx(i,2:k+2);
     S(i,id) = (di(k+1)-di)/(k*di(k+1)-sum(di(1:k))+eps);               %initialize S
 end
-alpha = mean(rr);
+rr = mean(rr);
 
 % initialize F
 S = (S+S')/2;                                                         % initialize F
@@ -123,7 +123,7 @@ for iter = 1:nItr
         idxa0 = idx(i,2:k+1);
         dfi = distf(i,idxa0);
         dxi = distDE(i,idxa0);
-        ad = -(dxi+lambda*dfi)/(2*alpha);
+        ad = -(dxi+lambda*dfi)/(2*rr);
         S(i,idxa0) = EProjSimplex_new(ad);
     end
     
