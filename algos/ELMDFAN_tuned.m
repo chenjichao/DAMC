@@ -17,7 +17,7 @@ original_X = X;
 
 cant_eigs = 0;
 
-nItr = 10;
+nItr = 30;
 nViw = length(X);
 nSmp = size(X{1}, 1);
 k = nNbr;
