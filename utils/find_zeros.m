@@ -2,7 +2,7 @@
 % clear
 % clc
 % % restoredefaultpath
-function find_zeros(filename)
+function results =  find_zeros(filename)
 
 
     addpath(genpath('logs'));
