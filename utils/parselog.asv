@@ -2,17 +2,14 @@
 % clear
 % clc
 % restoredefaultpath
-function parselog(filename,parameter)
+function parselog(parameter,filename)
 
     % set the parameter to parse
 %     parameter_name = 'nOut';
-    parameter_name = parameter;
 
     % read the text file
     addpath(genpath('logs'));
-%     fileID = fopen('ELMDFAN_tuned-MSRCv1-20200328_184637.log','r');
-    filename = sprintf('%s.log',filename);
-    fileID = fopen(filename,'r');
+    fileID = fopen('ELMDFAN_tuned-MSRCv1-20200328_184637.log','r');
     formatSpec = '%c';
     A = fscanf(fileID,formatSpec);
     fclose(fileID);
@@ -68,12 +65,6 @@ function parselog(filename,parameter)
     [M,I] = max(best_results,[],1);
     fprintf('\nbest: %.4f %.4f %.4f %.4f %.4f %.4f %.4f \n',M);
     fprintf('best: %s %s %s %s %s %s %s',...
-        candidates{I(1)},candidates{I(2)},candidates{I(3)},candidates{I(4)},...
-        candidates{I(5)},candidates{I(6)},candidates{I(7)});
-    % find the worst of each metric
-    [M,I] = min(best_results,[],1);
-    fprintf('\nworst: %.4f %.4f %.4f %.4f %.4f %.4f %.4f \n',M);
-    fprintf('worst: %s %s %s %s %s %s %s',...
         candidates{I(1)},candidates{I(2)},candidates{I(3)},candidates{I(4)},...
         candidates{I(5)},candidates{I(6)},candidates{I(7)});
 
