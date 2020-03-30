@@ -13,6 +13,7 @@ function labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut)
 islocal = 1;
 % OUTPUT
 % y: num*1 cluster indicator vector
+labels = [];
 original_X = X;
 
 cant_eigs = 0;
