@@ -319,3 +319,14 @@ fusion3 = getfield_with_default(params, 'fusion3', 'pd');
 
 labels = DMLAN(X, nCls, nNbr, alpha, nOut, fusion3);
 end
+
+function labels = runDAMC_wDE(X, Y, params)
+nCls = length(unique(Y));
+nNbr = getfield_with_default(params, 'nNbr', 10);
+fusion3 = getfield_with_default(params, 'fusion3', 'am');
+alpha = getfield_with_default(params, 'alpha', 0);
+alpha = 10^(alpha);
+nOut = getfield_with_default(params, 'nOut', nCls);
+
+labels = DAMC_wDE(X, nCls, nNbr, fusion3, alpha, nOut);
+end
