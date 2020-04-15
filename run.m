@@ -330,3 +330,14 @@ nOut = getfield_with_default(params, 'nOut', nCls);
 
 labels = DAMC_wDE(X, nCls, nNbr, fusion3, alpha, nOut);
 end
+
+function labels = runDAMC_fDfE(X, Y, params)
+nCls = length(unique(Y));
+nNbr = getfield_with_default(params, 'nNbr', 10);
+fusion3 = getfield_with_default(params, 'fusion3', 'am');
+alpha = getfield_with_default(params, 'alpha', 0);
+alpha = 10^(alpha);
+nOut = getfield_with_default(params, 'nOut', nCls);
+
+labels = DAMC_fDfE(X, nCls, nNbr, fusion3, alpha, nOut);
+end
