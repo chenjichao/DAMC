@@ -44,7 +44,7 @@ parfor (ii = 1:total_runs, num_workers)
     end
     accuracies{ii} = result;
     fprintf('Done experiment %d/%d in %.2fs, accuracy: %.4f, nmi: %.4f, purity: %.4f, precision: %.4f, recall: %.4f, F-score: %.4f, ARI: %.4f, parameter:\n',...
-        ii, total_runs, toc(tii), result(1), result(2), result(3), result(5), result(5), result(4), result(7));
+        ii, total_runs, toc(tii), result(1), result(2), result(3), result(5), result(6), result(4), result(7));
     disp(param_grid(c));
 end
 results_mat = zeros(num_runs, numel(param_grid), 7);
