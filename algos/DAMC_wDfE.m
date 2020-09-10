@@ -96,9 +96,13 @@ for iViw = 1:nViw
 end
 dist_e = distancefusion_within(temp);
 
-
+lambdas = [];
+objfun1s = [];
 %% repeat
 for iItr = 1:nItr
+    
+    objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
+    objfun1s = [objfun1s, objfun1];
     
     A_star_old = A_star;
     L_star = Affinity2Laplacian(A_star);
@@ -145,21 +149,57 @@ for iItr = 1:nItr
     
     %% Check rank to decide whether to continue, repeat or stop
     [~, ~, ev] = eig1(L_star, nCls, 0);
-    evs(:, iItr+1) = ev;
+    evs(:, iItr) = ev;
     fn1 = sum(ev(1:nCls));
     fn2 = sum(ev(1:nCls+1));
+    
+    
+%     lambdas = [lambdas, log2(lambda/r)];
+    lambdas = [lambdas, lambda];
+    
     if fn1 > 1e-11
         lambda = 2*lambda;
     elseif fn2 < 1e-11
         lambda = lambda/2;
         A_star = A_star_old;
     else
+%         lambdas = [lambdas, lambda];
+        objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
+        objfun1s = [objfun1s, objfun1];
         break
     end
     
 end
 
 iItr
+lambdas
+objfun1s
+
+
+% Y = [evs(nCls:nCls+1,:); ones(1,size(evs, 2))*1e-11]'
+Y = evs(nCls:nCls+1,:)'
+
+
+
+yyaxis left
+x_ticks = 1:iItr;
+% x_ticks = x_ticks - 1;
+xticks(x_ticks)
+xlim([1 iItr])
+
+
+plot(Y)
+xlabel('Iterations');
+
+yyaxis right
+plot(lambdas)
+legend('c-th eigenvalue','(c+1)-th eigenvalue','\lambda')
+lgd = legend;
+lgd.Location = 'north';
+
+title('MSRCv1')
+
+
 
 %% final results
 [clusternum, y] = graphconncomp(sparse(A_star));

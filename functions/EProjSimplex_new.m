@@ -14,7 +14,7 @@ end
 ft = 1;
 n = length(v);
 
-v0 = v-mean(v) + k/n;
+v0 = v - mean(v) + k/n;
 %vmax = max(v0);
 vmin = min(v0);
 if vmin < 0
