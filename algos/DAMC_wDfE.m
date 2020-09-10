@@ -1,4 +1,4 @@
-function labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut)
+function labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut, rate_embed)
 % INPUT
 % X: num*dim data matrix, each row is a data point
 % nCls: number of clusters
@@ -96,13 +96,13 @@ for iViw = 1:nViw
 end
 dist_e = distancefusion_within(temp);
 
-lambdas = [];
-objfun1s = [];
+% lambdas = [];
+% objfun1s = [];
 %% repeat
 for iItr = 1:nItr
     
-    objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
-    objfun1s = [objfun1s, objfun1];
+%     objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
+%     objfun1s = [objfun1s, objfun1];
     
     A_star_old = A_star;
     L_star = Affinity2Laplacian(A_star);
@@ -123,7 +123,8 @@ for iItr = 1:nItr
             case 'sm'
                 dist_de(iViw,:,:) = dist_d(iViw,:,:)+dist_e(iViw,:,:);
             case 'am'
-                dist_de(iViw,:,:) = (dist_d(iViw,:,:)+dist_e(iViw,:,:))/2;
+%                 dist_de(iViw,:,:) = (dist_d(iViw,:,:)+dist_e(iViw,:,:))/2;
+                dist_de(iViw,:,:) = (1-rate_embed) * dist_d(iViw,:,:) + rate_embed * dist_e(iViw,:,:);
             otherwise
                 dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
         end
@@ -155,7 +156,7 @@ for iItr = 1:nItr
     
     
 %     lambdas = [lambdas, log2(lambda/r)];
-    lambdas = [lambdas, lambda];
+%     lambdas = [lambdas, lambda];
     
     if fn1 > 1e-11
         lambda = 2*lambda;
@@ -164,40 +165,40 @@ for iItr = 1:nItr
         A_star = A_star_old;
     else
 %         lambdas = [lambdas, lambda];
-        objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
-        objfun1s = [objfun1s, objfun1];
+%         objfun1 = trace(norm_dists_star' * A_star) + r * norm(A_star,'fro');
+%         objfun1s = [objfun1s, objfun1];
         break
     end
     
 end
 
-iItr
-lambdas
-objfun1s
+% iItr
+% lambdas
+% objfun1s
 
 
 % Y = [evs(nCls:nCls+1,:); ones(1,size(evs, 2))*1e-11]'
-Y = evs(nCls:nCls+1,:)'
+% Y = evs(nCls:nCls+1,:)'
 
 
 
-yyaxis left
-x_ticks = 1:iItr;
-% x_ticks = x_ticks - 1;
-xticks(x_ticks)
-xlim([1 iItr])
+% yyaxis left
+% x_ticks = 1:iItr;
+% % x_ticks = x_ticks - 1;
+% xticks(x_ticks)
+% xlim([1 iItr])
 
 
-plot(Y)
-xlabel('Iterations');
-
-yyaxis right
-plot(lambdas)
-legend('c-th eigenvalue','(c+1)-th eigenvalue','\lambda')
-lgd = legend;
-lgd.Location = 'north';
-
-title('MSRCv1')
+% plot(Y)
+% xlabel('Iterations');
+% 
+% yyaxis right
+% plot(lambdas)
+% legend('c-th eigenvalue','(c+1)-th eigenvalue','\lambda')
+% lgd = legend;
+% lgd.Location = 'north';
+% 
+% title('MSRCv1')
 
 
 

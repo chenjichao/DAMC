@@ -59,9 +59,18 @@ fprintf('Dataset statistics of %s:\n', dataset_name);
 fprintf('num_samples:  %d\n', nSmp);
 fprintf('num_clusters: %d\n', nCls);
 fprintf('num_features_each_view: \n');
+
+% for iViw = 1:nViw
+%     X{iViw} = normalize(X{iViw});
+%     fprintf('    %d\n', size(X{iViw}, 2));
+% end
+% fprintf('num_views: %d\n', nViw);
+
+% normalization as in GFSC
 for iViw = 1:nViw
-    X{iViw} = normalize(X{iViw});
-    fprintf('    %d\n', size(X{iViw}, 2));
+    dist = max(max(X{iViw})) - min(min(X{iViw}));
+    m01 = (X{iViw} - min(min(X{iViw})))/dist;
+    X{iViw} = 2 * m01 - 1;
 end
 fprintf('num_views: %d\n', nViw);
 
@@ -298,15 +307,18 @@ nOut = getfield_with_default(params, 'nOut', nCls);
 labels = ELMDFAN_tuned(X, nCls, nNbr, fusion3, alpha, nOut);
 end
 
-function labels = runDAMC_wDfE(X, Y, params)
+function labels = runDAMC_wDfE(X, Y, params) % best
 nCls = length(unique(Y));
 nNbr = getfield_with_default(params, 'nNbr', 10);
 fusion3 = getfield_with_default(params, 'fusion3', 'am');
+
+rate_embed = getfield_with_default(params, 'rate_embed', 0.5); % the percentage of embedding distance in dist_DE
+
 alpha = getfield_with_default(params, 'alpha', 0);
 alpha = 10^(alpha);
 nOut = getfield_with_default(params, 'nOut', nCls);
 
-labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut);
+labels = DAMC_wDfE(X, nCls, nNbr, fusion3, alpha, nOut, rate_embed);
 end
 
 function labels = runDMLAN(X, Y, params)
