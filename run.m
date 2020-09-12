@@ -60,19 +60,19 @@ fprintf('num_samples:  %d\n', nSmp);
 fprintf('num_clusters: %d\n', nCls);
 fprintf('num_features_each_view: \n');
 
-% for iViw = 1:nViw
-%     X{iViw} = normalize(X{iViw});
-%     fprintf('    %d\n', size(X{iViw}, 2));
-% end
-% fprintf('num_views: %d\n', nViw);
-
-% normalization as in GFSC
 for iViw = 1:nViw
-    dist = max(max(X{iViw})) - min(min(X{iViw}));
-    m01 = (X{iViw} - min(min(X{iViw})))/dist;
-    X{iViw} = 2 * m01 - 1;
+    X{iViw} = normalize(X{iViw});
+    fprintf('    %d\n', size(X{iViw}, 2));
 end
 fprintf('num_views: %d\n', nViw);
+
+% normalization as in GFSC
+% for iViw = 1:nViw
+%     dist = max(max(X{iViw})) - min(min(X{iViw}));
+%     m01 = (X{iViw} - min(min(X{iViw})))/dist;
+%     X{iViw} = 2 * m01 - 1;
+% end
+% fprintf('num_views: %d\n', nViw);
 
 if permdata
     perm = randperm(nSmp);
