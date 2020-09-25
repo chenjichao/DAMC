@@ -96,6 +96,31 @@ for iViw = 1:nViw
 end
 dist_e = distancefusion_within(temp);
 
+% combine embedding distance and origianl distance before iteration
+dist_de = zeros(nViw,nSmp,nSmp);
+dist_d = dist_d * (1-rate_embed);
+dist_e = dist_e * rate_embed;
+for iViw = 1:nViw
+    switch fusion3
+        case 'pd'
+            dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
+        case 'gm'
+            if rate_embed == 0
+                dist_de(iViw,:,:) = dist_d(iViw,:,:);
+            elseif rate_embed == 1
+                dist_de(iViw,:,:) = dist_e(iViw,:,:);
+            else
+                dist_de(iViw,:,:) = sqrt(dist_d(iViw,:,:).*dist_e(iViw,:,:));
+            end
+        case 'sm'
+            dist_de(iViw,:,:) = dist_d(iViw,:,:) + dist_e(iViw,:,:);
+        case 'am'
+%                 dist_de(iViw,:,:) = (dist_d(iViw,:,:)+dist_e(iViw,:,:))/2;
+            dist_de(iViw,:,:) = dist_d(iViw,:,:) + dist_e(iViw,:,:);
+        otherwise
+            dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
+    end
+end
 % lambdas = [];
 % objfun1s = [];
 %% repeat
@@ -113,31 +138,9 @@ for iItr = 1:nItr
     
     
     %% update weights of view Wv  , thus global dist_DE
-    dist_de = zeros(nViw,nSmp,nSmp);
-    
-    dist_d = dist_d * (1-rate_embed);
-    dist_e = dist_e * rate_embed;
     
     for iViw = 1:nViw
-        switch fusion3
-            case 'pd'
-                dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
-            case 'gm'
-                if rate_embed == 0
-                    dist_de(iViw,:,:) = dist_d(iViw,:,:);
-                elseif rate_embed == 1
-                    dist_de(iViw,:,:) = dist_e(iViw,:,:);
-                else
-                    dist_de(iViw,:,:) = sqrt(dist_d(iViw,:,:).*dist_e(iViw,:,:));
-                end
-            case 'sm'
-                dist_de(iViw,:,:) = dist_d(iViw,:,:) + dist_e(iViw,:,:);
-            case 'am'
-%                 dist_de(iViw,:,:) = (dist_d(iViw,:,:)+dist_e(iViw,:,:))/2;
-                dist_de(iViw,:,:) = dist_d(iViw,:,:) + dist_e(iViw,:,:);
-            otherwise
-                dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
-        end
+
 %         dist_de(iViw,:,:) = dist_d(iViw,:,:).*dist_e(iViw,:,:);
         Wv(iViw) = 0.5/sqrt(sum(sum( squeeze(dist_de(iViw,:,:)).*A_star)));
     end
