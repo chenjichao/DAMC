@@ -18,7 +18,7 @@ ip.addParameter('seed', -1, @isnumeric);
 ip.addParameter('plot', {}, @iscell);
 ip.addParameter('log_path', 'logs', @ischar);
 ip.addParameter('cache_path', 'cache', @ischar);
-ip.addParameter('fail_on_error', true, @islogical);
+ip.addParameter('fail_on_error', false, @islogical);
 ip.addParameter('permdata', true, @islogical);
 ip.parse(varargin{:});
 names1 = fieldnames(ip.Results);
