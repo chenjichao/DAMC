@@ -101,7 +101,9 @@ dist_de = zeros(nViw,nSmp,nSmp);
 % dist_d = dist_d * (1-rate_embed);
 % dist_e = dist_e * rate_embed;
 
-dist_de = dist_e;
+% dist_de = dist_e;
+dist_de = dist_d;
+
 % for iViw = 1:nViw
 %     switch fusion3
 %         case 'pd'

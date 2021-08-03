@@ -11,7 +11,7 @@ ip = inputParser;
 ip.KeepUnmatched = true;
 ip.PartialMatching = false;
 ip.addParameter('verbose', false, @islogical);
-ip.addParameter('iterations', 50, @isnumeric);
+ip.addParameter('iterations', 30, @isnumeric);
 ip.addParameter('num_runs', 10, @isnumeric);
 ip.addParameter('parallel', false, @islogical);
 ip.addParameter('seed', -1, @isnumeric);
